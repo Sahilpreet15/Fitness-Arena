@@ -1,11 +1,11 @@
 
 const bcrypt = require("bcrypt")
 const User=require("../Modal/UserModal")
+const jwt = require('jsonwebtoken');
 
-
-async function signup(req){
+async function signup(req){``
     return new Promise((resolve, reject)=>{
-    const { firstName, lastName,userName, email, password,phone} = req.body;
+    const { firstName, lastName,userName, email, password,phone,gender} = req.body;
     console.log(req.body)
     let hashPassword =   bcrypt.hashSync(password, 10);
     console.log(hashPassword+"hashPassword")
@@ -15,7 +15,8 @@ async function signup(req){
         userName,
         email,
         password: hashPassword,
-        phone
+        phone,
+        gender
     });
     console.log(newUser)
     
@@ -42,4 +43,37 @@ async function signup(req){
     })
 }
 
-module.exports={signup}
+// login
+async function login(req){
+    return new Promise((resolve, reject)=>{
+        const {email ,password}=req.body;
+       User.findOne({ email }).then((doc)=>{
+        if(!doc){
+            resolve("User not exist")
+        }
+        //compare password 
+        bcrypt.compare(password,doc.password, function(res) {
+             if(res)
+             {
+                // resolve( "login successfull")
+                let data = {
+                    id : doc._id,
+                    name: doc.name,
+                }             
+                const token = jwt.sign(data, '34567890-87654344gbngyumn78k78');
+                resolve(token)
+             }
+             else{
+                resolve("password incorrect")
+             }
+          });
+
+       })
+       .catch((err)=>{
+        console.log(err)
+       })
+
+    })
+}
+
+module.exports={signup,login}
