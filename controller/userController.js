@@ -52,7 +52,7 @@ async function login(req){
             resolve("User not exist")
         }
         //compare password 
-        bcrypt.compare(password,doc.password, function(res) {
+        bcrypt.compare(password,doc.password, function(req,res) {
              if(res)
              {
                 // resolve( "login successfull")
