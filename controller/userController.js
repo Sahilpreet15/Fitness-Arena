@@ -3,9 +3,31 @@ const bcrypt = require("bcrypt")
 const User=require("../Modal/UserModal")
 const jwt = require('jsonwebtoken');
 
-async function signup(req){``
+const nodemailer = require('nodemailer');
+let mailTransporter = nodemailer.createTransport({
+    service: 'gmail',
+    auth: {
+        user: 'akg@ambientetechnologies.com',
+        pass: ''
+    }
+});
+
+function randomStr(len, arr) { 
+    let ans = '';
+    for (let i = len; i > 0; i--) {
+        ans +=
+            arr[(Math.floor(Math.random() * arr.length))];
+    }
+    console.log(ans);
+    return ans;
+}
+
+//randomStr(20, '12345abcde');
+
+
+async function signup(req){
     return new Promise((resolve, reject)=>{
-    const { firstName, lastName,userName, email, password,phone,gender} = req.body;
+    const { firstName, lastName,userName, email, password,phone} = req.body;
     console.log(req.body)
     let hashPassword =   bcrypt.hashSync(password, 10);
     console.log(hashPassword+"hashPassword")
@@ -15,8 +37,7 @@ async function signup(req){``
         userName,
         email,
         password: hashPassword,
-        phone,
-        gender
+        phone
     });
     console.log(newUser)
     
@@ -43,7 +64,6 @@ async function signup(req){``
     })
 }
 
-// login
 async function login(req){
     return new Promise((resolve, reject)=>{
         const {email ,password}=req.body;
@@ -52,7 +72,7 @@ async function login(req){
             resolve("User not exist")
         }
         //compare password 
-        bcrypt.compare(password,doc.password, function(req,res) {
+        bcrypt.compare(password,doc.password, function(err, res) {
              if(res)
              {
                 // resolve( "login successfull")
@@ -76,4 +96,113 @@ async function login(req){
     })
 }
 
-module.exports={signup,login}
+async function forget(req)
+{
+    return new Promise((resolve, reject)=>{
+        const {email}=req.body;
+       User.findOne({ email }).then((doc)=>{        
+        if(!doc){
+            console.log('failed')
+            resolve("email does not exist");
+        }
+        else{
+            let otpToken = randomStr(6, '12345abcde');
+            User.updateOne({email},{otpToken:otpToken})
+            .then((doc)=>{
+                console.log('otp Saved',doc)
+                {
+                    resolve(doc)
+                }
+            }).catch((err)=>
+               {console.log(err,"otpsave error")}
+            )
+            let mailDetails = {
+                from: 'akg@ambientetechnologies.com',
+                to: req.body.email,
+                subject: "otp",
+                text: otpToken
+            };
+            mailTransporter.sendMail(mailDetails, function(err, data) {
+                if(err) {
+                    console.log('Error Occurs',err);
+                } else {
+                    console.log(otpToken,'Email sent successfully');
+                }
+            });
+            console.log('not failed')
+            resolve("Email sent successfully")
+        }
+       })
+       .catch((err)=>{
+        console.log(err)
+       })
+    })
+}
+
+//update password
+async function updatePassword(req)
+{
+    const {email,password,otpToken}=req.body;
+    let hashPassword =   bcrypt.hashSync(password, 10);
+    return new Promise((resolve, reject)=>{
+        const {email , otpToken}=req.body;
+        console.log({email, otpToken}, req.body)
+       User.findOne({ email:email , otpToken:otpToken }).then((doc)=>{        
+        if(!doc){
+            console.log('failed')
+            resolve("email does not exist");
+        }
+        else{
+            console.log('updatePassword is sucess')
+            User.updateOne({email},{password:hashPassword}).then((doc)=>{
+                console.log({doc})
+            })
+            .catch((err)=>{
+                console.log({err})
+            })
+            resolve("Password updated successfully")
+        }
+       })
+       .catch((err)=>{
+        console.log(err)
+       })
+    })
+}
+
+//change password
+
+async function changePassword(req) {
+    const { email, password ,otpToken} = req.body;
+
+    try {
+        const hashPassword = await bcrypt.hash(password, 10);
+        console.log(hashPassword);
+
+        const userEmail = await User.findOne({ email:email});
+        const userOtp = await User.findOne({ otpToken:otpToken});
+        if (!userEmail) {
+            console.log('userEmail not found');
+            return "userEmail is not valid";
+        }
+        else if (!userOtp) {
+            console.log('userOtp not found');
+            return "userOtp is not valid";
+        }
+        await User.updateOne({ email }, { password: hashPassword });
+        console.log('Password updated successfully');
+        return "Password updated successfully";
+    } 
+    catch (error) {
+        console.error(error);
+        return "An error occurred";
+    }
+}
+
+
+module.exports={
+    signup ,
+    login,
+    forget,
+    updatePassword,
+    changePassword
+}

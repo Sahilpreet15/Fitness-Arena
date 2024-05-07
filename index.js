@@ -28,5 +28,17 @@ app.post("/signup", async (req, res) => {
   return res.status(200).json({"message" : result});
 });
 
+app.post("/forget", async (req,res)=>{
+  let result = await userController.forget(req)
+  console.log({result})
+  return res.send(result)
+})
+
+app.post("/updatePassword", async (req,res)=>{
+  let result = await userController.updatePassword(req)
+  console.log({result})
+  return res.send(result)
+})
+
 app.listen(3005);
 console.log('Server is running on port 3005');
