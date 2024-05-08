@@ -2,15 +2,27 @@
 const bcrypt = require("bcrypt")
 const User=require("../Modal/UserModal")
 const jwt = require('jsonwebtoken');
+const tls = require('tls');
 
 const nodemailer = require('nodemailer');
-let mailTransporter = nodemailer.createTransport({
-    service: 'gmail',
-    auth: {
-        user: 'akg@ambientetechnologies.com',
-        pass: ''
+
+
+let mailTransporter = nodemailer.createTransport(
+    {
+        host: "smtp.gmail.com",
+        port: 587,
+        tls: {
+            rejectUnauthorized: false,
+            minVersion: "TLSv1.2"
+        },
+        auth: {
+            user: "anuj@hopingminds.com",
+            pass: "",
+          },
     }
-});
+    
+
+);
 
 function randomStr(len, arr) { 
     let ans = '';
@@ -117,16 +129,17 @@ async function forget(req)
                {console.log(err,"otpsave error")}
             )
             let mailDetails = {
-                from: 'akg@ambientetechnologies.com',
+                from: 'anuj@hopingminds.com',
                 to: req.body.email,
                 subject: "otp",
                 text: otpToken
             };
-            mailTransporter.sendMail(mailDetails, function(err, data) {
+            mailTransporter.sendMail(mailDetails, function(err, data) {               
                 if(err) {
                     console.log('Error Occurs',err);
+                    console.log('uuuuu')
                 } else {
-                    console.log(otpToken,'Email sent successfully');
+                    console.log(otpToken,'Email sent successfully','1234');
                 }
             });
             console.log('not failed')
