@@ -9,6 +9,17 @@
     "mongoose": "^8.3.2",
     "mongose": "^0.0.2-security",
     "nodemailer": "^6.9.13",
+    "nodemon": "^3.1.0",
     "tls": "^0.0.1"
-  }
+  },
+  "name": "b2_backend",
+  "version": "1.0.0",
+  "main": "index.js",
+  "devDependencies": {},
+  "scripts": {
+    "start": "nodemon index"
+  },
+  "author": "",
+  "license": "ISC",
+  "description": ""
 }
