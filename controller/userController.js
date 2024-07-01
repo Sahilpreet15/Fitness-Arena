@@ -15,8 +15,8 @@ let mailTransporter = nodemailer.createTransport(
             minVersion: "TLSv1.2"
         },
         auth: {
-            user: "ganuj754@gmail.com",
-            pass: "cxfk dple ibzn qpoh"
+            user: "sahilpreetsaini15@gmail.com",
+            pass: "lyky vqqa sefj qczp"
             ,
         },
     }
@@ -73,6 +73,8 @@ async function signup(req) {
     })
 }
 
+
+
 async function login(req) {
     return new Promise((resolve, reject) => {
         const { email, password } = req.body;
@@ -89,7 +91,9 @@ async function login(req) {
                         name: doc.name,
                     }
                     const token = jwt.sign(data, '34567890-87654344gbngyumn78k78');
-                    resolve(token)
+                    const fname = doc.firstName;
+                    resolve([token, fname])
+                   
                 }
                 else {
                     resolve("password incorrect")
@@ -123,7 +127,7 @@ async function forget(req) {
                     }).catch((err) => { console.log(err, "otpsave error") }
                     )
                 let mailDetails = {
-                    from: 'anuj@hopingminds.com',
+                    from: 'sahilpreetsaini15@gmail.com',
                     to: req.body.email,
                     subject: "otp",
                     text: otpToken
@@ -152,20 +156,31 @@ async function updatePassword(req) {
     return new Promise((resolve, reject) => {
         const { email, otpToken } = req.body;
         console.log({ email, otpToken }, req.body)
-        User.findOne({ email: email, otpToken: otpToken }).then((doc) => {
+        User.findOne({ email: email }).then((doc) => {
             if (!doc) {
                 console.log('failed')
                 resolve("email does not exist");
             }
             else {
-                console.log('updatePassword is sucess')
-                User.updateOne({ email }, { password: hashPassword }).then((doc) => {
-                    console.log({ doc })
+                User.findOne({ otpToken: otpToken }).then((doc) => {
+                    if (!doc) {
+                        console.log('failed')
+                        resolve("OTP does not match");
+                    } else {
+                        console.log('updatePassword is sucess')
+                        User.updateOne({ email }, { password: hashPassword }).then((doc) => {
+                            console.log({ doc })
+                        })
+                            .catch((err) => {
+                                console.log({ err })
+                            })
+                        resolve("Password updated successfully")
+                    }
                 })
                     .catch((err) => {
-                        console.log({ err })
+                        console.log(err)
                     })
-                resolve("Password updated successfully")
+
             }
         })
             .catch((err) => {
@@ -173,6 +188,9 @@ async function updatePassword(req) {
             })
     })
 }
+
+
+
 
 //change password
 

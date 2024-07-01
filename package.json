@@ -15,7 +15,9 @@
   "name": "b2_backend",
   "version": "1.0.0",
   "main": "index.js",
-  "devDependencies": {},
+  "devDependencies": {
+    "@appland/appmap-agent-js": "^14.2.0"
+  },
   "scripts": {
     "start": "nodemon index"
   },
